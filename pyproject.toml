@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "2048game"
+version = "0.1.0"
+description = ""
+authors = ["MuongKimhong <muongkimhong086@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+textual = "^0.52.1"
+textual-dev = "^1.5.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
