@@ -72,7 +72,7 @@ class Board(Container, can_focus=True):
             self.blocks[f"{i+1}"] = tile
             yield tile
 
-    # check which tile can be moved to move_direction
+    # check which tile can be moved to the move_direction
     def check_move_ability(self) -> None:
         for key, value in self.blocks.items():
             tile = value
@@ -91,6 +91,9 @@ class Board(Container, can_focus=True):
                     if (tile.content_region.y + tile.content_region.height) < self.content_region.height:
                         tile.update_can_move(moved_direction=self.move_direction)    
 
+    def move_tile_right(self) -> None:
+        pass
+
     def on_mount(self, event: events.Mount) -> None:
         self.focus()
 
@@ -103,3 +106,5 @@ class Board(Container, can_focus=True):
             self.move_direction = event.key 
             self.check_move_ability()
 
+            if self.move_direction == "right":
+                self.move_tile_right()
