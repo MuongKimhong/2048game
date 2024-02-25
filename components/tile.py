@@ -6,7 +6,17 @@ class Tile(Static):
     def __init__(self, value: int | None, id: str, is_empty: bool = True) -> None:
         self.value = value
         self.is_empty = is_empty
+        self.can_move = {
+            "right": False,
+            "left" : False,
+            "up"   : False,
+            "down" : False
+        }
         super().__init__(id=id)
+
+    def update_can_move(self, moved_direction: str) -> None:
+        for key in self.can_move:
+            self.can_move[key] = True if key == moved_direction else False
 
     def on_mount(self, event: events.Mount) -> None:
         self.styles.height = "100%"

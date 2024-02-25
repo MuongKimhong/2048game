@@ -22,26 +22,13 @@ class UpperContainer(Container, can_focus=True):
         yield Score()
 
 
-class BoardContainer(Container, can_focus=True):
-    DEFAULT_CSS = """
-    BoardContainer {
-        layout: grid;
-        height: 28;
-        align: center middle;
-    } 
-    """
-
-    def compose(self) -> ComposeResult:
-        yield Board()
-
-
 class GameApp(App):
     def on_mount(self, event: events.Mount) -> None:
         self.screen.styles.background = "grey"
 
     def compose(self) -> ComposeResult:
         yield UpperContainer()
-        yield BoardContainer()
+        yield Board()
 
 
 if __name__ == "__main__":

@@ -30,7 +30,7 @@ class GeometricSequence:
         return s
 
 
-class Board(Container):
+class Board(Container, can_focus=True):
     DEFAULT_CSS = """
     Board {
         layout: grid;
@@ -43,9 +43,8 @@ class Board(Container):
     blocks: Dict[str, Tile] = {}
     total_blocks: int = 16
 
-    mouse_move_direction: Union[str, None] = None
-    mouse_down_coordinate: tuple = ()
-    mouse_up_coordinate: tuple = ()
+    move_direction: Union[str, None] = None
+    all_move_directions: list[str] = ["left", "right", "up", "down"]
 
     def compose(self) -> ComposeResult:
         ''' 
@@ -73,22 +72,34 @@ class Board(Container):
             self.blocks[f"{i+1}"] = tile
             yield tile
 
-    def calculate_move_direction(self) -> None:
-        '''
-        if (up[x] - down[x] > up[y] - down[y]) && 
-        '''
+    # check which tile can be moved to move_direction
+    def check_move_ability(self) -> None:
+        for key, value in self.blocks.items():
+            tile = value
 
-        after_moved_coordinate: tuple = (
-            self.mouse_up_coordinate[0] - self.mouse_down_coordinate[0],
-            self.mouse_up_coordinate[1] - self.mouse_down_coordinate[1]
-        )
+            match self.move_direction:
+                case "right":
+                    if (tile.content_region.x + tile.content_region.width) < self.content_region.width:
+                        tile.update_can_move(moved_direction=self.move_direction)
+                case "left":
+                    if tile.content_region.x > self.content_region.x:
+                        tile.update_can_move(moved_direction=self.move_direction)
+                case "up":
+                    if tile.content_region.y > self.content_region.y:
+                        tile.update_can_move(moved_direction=self.move_direction)
+                case "down":
+                    if (tile.content_region.y + tile.content_region.height) < self.content_region.height:
+                        tile.update_can_move(moved_direction=self.move_direction)    
 
+    def on_mount(self, event: events.Mount) -> None:
+        self.focus()
 
+    def on_blur(self, event: events.Blur) -> None:
+        '''if user accidently click on something and Board loses focus, re-focus the board'''
+        self.focus()
+ 
+    def on_key(self, event: events.Key) -> None:
+        if event.key in self.all_move_directions:
+            self.move_direction = event.key 
+            self.check_move_ability()
 
-    def on_mouse_down(self, event: events.MouseDown) -> None:
-        self.mouse_down_coordinate = (event.x, event.y)
-
-    def on_mouse_up(self, event: events.MouseUp) -> None:
-        self.mouse_up_coordinate = (event.x, event.y)
-
-        log(f"down {self.mouse_down_coordinate}, up {self.mouse_up_coordinate}")
