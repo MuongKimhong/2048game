@@ -1,9 +1,11 @@
+from typing import Union
+
 from textual.widgets import Static
 from textual import events
 
 
 class Tile(Static):
-    def __init__(self, value: int | None, id: str, is_empty: bool = True) -> None:
+    def __init__(self, value: Union[int, None], id: str, block_number: int, is_empty: bool = True) -> None:
         self.value = value
         self.is_empty = is_empty
         self.can_move = {
@@ -12,6 +14,7 @@ class Tile(Static):
             "up"   : False,
             "down" : False
         }
+        self.block_number = block_number
         super().__init__(id=id)
 
     def update_can_move(self, moved_direction: str) -> None:
@@ -19,10 +22,12 @@ class Tile(Static):
             self.can_move[key] = True if key == moved_direction else False
 
     def change_to_empty(self) -> None:
+        self.is_empty = True
         self.renderable = ""
         self.styles.background = "lightgrey"
 
     def change_to_not_empty(self) -> None:
+        self.is_empty = False
         self.renderable = f"{self.value}"
         self.styles.color = "white"
         self.styles.text_align = "center"

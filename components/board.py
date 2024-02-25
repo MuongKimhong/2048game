@@ -41,10 +41,13 @@ class Board(Container, can_focus=True):
     """
     geometric_sequence = GeometricSequence().sequence
     blocks: Dict[str, Tile] = {}
-    total_blocks: int = 16
+    TOTAL_BLOCKS: int = 16
+    TOTAL_ROWS = 4
+    TOTAL_COLUMNS = 4
 
     move_direction: Union[str, None] = None
     all_move_directions: list[str] = ["left", "right", "up", "down"]
+
 
     def compose(self) -> ComposeResult:
         ''' 
@@ -53,45 +56,64 @@ class Board(Container, can_focus=True):
         - both tiles appear in random block between block 1 and block 16
         '''
      
-        tile_two_block: int = randrange(self.total_blocks)
+        tile_two_block: int = randrange(self.TOTAL_BLOCKS)
         tile_four_block: Union[int, None] = None
         while True:
-            tile_four_block = randrange(self.total_blocks)
+            tile_four_block = randrange(self.TOTAL_BLOCKS)
 
             if tile_four_block != tile_two_block:
                 break
 
-        for i in range(self.total_blocks):
+        for i in range(self.TOTAL_BLOCKS):
             if i == tile_two_block:
-                tile = Tile(value=2, id=f"block-{i+1}", is_empty=False)
+                tile = Tile(value=2, id=f"block-{i+1}", block_number=i+1, is_empty=False)
             elif i == tile_four_block:
-                tile = Tile(value=4, id=f"block-{i+1}", is_empty=False)
+                tile = Tile(value=4, id=f"block-{i+1}", block_number=i+1, is_empty=False)
             else:
-                tile = Tile(value=None, id=f"block-{i+1}", is_empty=True)
+                tile = Tile(value=None, id=f"block-{i+1}", block_number=i+1, is_empty=True)
 
             self.blocks[f"{i+1}"] = tile
             yield tile
 
     # check which tile can be moved to the move_direction
-    def check_move_ability(self) -> None:
-        for key, value in self.blocks.items():
-            tile = value
+    def can_move_to_direction(self, tile: Tile) -> bool:
+        match self.move_direction:
+            case "right":
+                if tile.content_region.x + tile.content_region.width < self.content_region.width:
+                    next_tile = self.query_one(f"#block-{tile.block_number+1}")
+                    if (next_tile.is_empty) or (next_tile.value == tile.value):
+                        return True
+            case "left":
+                if tile.content_region.x > self.content_region.x:
+                    return True
+            case "up":
+                if tile.content_region.y > self.content_region.y:
+                    return True
+            case "down":
+                if (tile.content_region.y + tile.content_region.height) < self.content_region.height:
+                    return True
 
-            match self.move_direction:
-                case "right":
-                    if (tile.content_region.x + tile.content_region.width) < self.content_region.width:
-                        tile.update_can_move(moved_direction=self.move_direction)
-                case "left":
-                    if tile.content_region.x > self.content_region.x:
-                        tile.update_can_move(moved_direction=self.move_direction)
-                case "up":
-                    if tile.content_region.y > self.content_region.y:
-                        tile.update_can_move(moved_direction=self.move_direction)
-                case "down":
-                    if (tile.content_region.y + tile.content_region.height) < self.content_region.height:
-                        tile.update_can_move(moved_direction=self.move_direction)    
+        return False
 
-    def move_tile_right(self) -> None:
+    def handle_right_direction(self) -> None:
+        temp_blocks = self.blocks
+        for tile in self.blocks.values():
+            if tile.value is None:
+                continue
+
+            can_move_count = self.TOTAL_COLUMNS - tile.block_number
+            for i in range(can_move_count):
+                if self.can_move_to_direction(tile):
+                    # switch place
+                    pass
+
+    def handle_left_direction(self) -> None:
+        pass
+
+    def handle_up_direction(self) -> None:
+        pass
+
+    def handle_down_direction(self) -> None:
         pass
 
     def on_mount(self, event: events.Mount) -> None:
@@ -104,7 +126,14 @@ class Board(Container, can_focus=True):
     def on_key(self, event: events.Key) -> None:
         if event.key in self.all_move_directions:
             self.move_direction = event.key 
-            self.check_move_ability()
 
-            if self.move_direction == "right":
-                self.move_tile_right()
+            match self.move_direction:
+                case "right":
+                    log(self.blocks)
+                    self.handle_right_direction()
+                case "left":
+                    self.handle_left_direction()
+                case "up":
+                    self.handle_up_direction()
+                case "down":
+                    self.handle_down_direction()
