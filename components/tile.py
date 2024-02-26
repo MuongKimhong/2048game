@@ -1,11 +1,18 @@
-from typing import Union
+from typing import Union, Dict
 
 from textual.widgets import Static
 from textual import events
 
 
 class Tile(Static):
-    def __init__(self, value: Union[int, None], id: str, block_number: int, is_empty: bool = True) -> None:
+    def __init__(
+        self, 
+        value: Union[int, None], 
+        id: str, 
+        block_number: int, 
+        board_region: Dict[str, int], # {"row": ?, "column": ?}
+        is_empty: bool = True
+    ) -> None:
         self.value = value
         self.is_empty = is_empty
         self.can_move = {
@@ -15,6 +22,7 @@ class Tile(Static):
             "down" : False
         }
         self.block_number = block_number
+        self.board_region = board_region
         super().__init__(id=id)
 
     def update_can_move(self, moved_direction: str) -> None:
@@ -24,9 +32,11 @@ class Tile(Static):
     def change_to_empty(self) -> None:
         self.is_empty = True
         self.renderable = ""
+        self.value = None
         self.styles.background = "lightgrey"
 
-    def change_to_not_empty(self) -> None:
+    def change_to_not_empty(self, new_value: Union[int, None] = None) -> None:
+        self.value = new_value if new_value is not None else self.value
         self.is_empty = False
         self.renderable = f"{self.value}"
         self.styles.color = "white"

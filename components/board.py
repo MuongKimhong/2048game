@@ -56,24 +56,54 @@ class Board(Container, can_focus=True):
         - both tiles appear in random block between block 1 and block 16
         '''
      
-        tile_two_block: int = randrange(self.TOTAL_BLOCKS)
-        tile_four_block: Union[int, None] = None
-        while True:
-            tile_four_block = randrange(self.TOTAL_BLOCKS)
+        # tile_two_block: int = randrange(self.TOTAL_BLOCKS)
+        # tile_four_block: Union[int, None] = None
+        # while True:
+        #     tile_four_block = randrange(self.TOTAL_BLOCKS)
 
-            if tile_four_block != tile_two_block:
-                break
+        #     if tile_four_block != tile_two_block:
+        #         break
+        tile_two_block = 2
+        tile_four_block = 3
 
-        for i in range(self.TOTAL_BLOCKS):
-            if i == tile_two_block:
-                tile = Tile(value=2, id=f"block-{i+1}", block_number=i+1, is_empty=False)
-            elif i == tile_four_block:
-                tile = Tile(value=4, id=f"block-{i+1}", block_number=i+1, is_empty=False)
-            else:
-                tile = Tile(value=None, id=f"block-{i+1}", block_number=i+1, is_empty=True)
+        '''
+        loop thru TOTAL_ROWS and TOTAL_COLUMNS instead of TOTAL_BLOCKS to get
+        board region (which_row, which_column)
+        '''
+        starting_block_number = 1
+        for row in range(self.TOTAL_ROWS):
+            for column in range(self.TOTAL_COLUMNS):
+                if starting_block_number == tile_two_block:
+                    value = 2
+                    is_empty = False
+                elif starting_block_number == tile_four_block:
+                    value = 4
+                    is_empty = False
+                else:
+                    value = None
+                    is_empty = True
 
-            self.blocks[f"{i+1}"] = tile
-            yield tile
+                tile = Tile(
+                    value=value,
+                    id=f"block-{starting_block_number}",
+                    block_number=starting_block_number,
+                    board_region={"row": row+1, "column": column+1},
+                    is_empty=is_empty
+                )
+                self.blocks[f"{starting_block_number}"] = tile
+                starting_block_number = starting_block_number + 1
+                yield tile
+
+        # for i in range(self.TOTAL_BLOCKS):
+        #     if i == tile_two_block:
+        #         tile = Tile(value=2, id=f"block-{i+1}", block_number=i+1, is_empty=False)
+        #     elif i == tile_four_block:
+        #         tile = Tile(value=4, id=f"block-{i+1}", block_number=i+1, is_empty=False)
+        #     else:
+        #         tile = Tile(value=None, id=f"block-{i+1}", block_number=i+1, is_empty=True)
+
+        #     self.blocks[f"{i+1}"] = tile
+        #     yield tile
 
     # check which tile can be moved to the move_direction
     def can_move_to_direction(self, tile: Tile) -> bool:
@@ -96,16 +126,23 @@ class Board(Container, can_focus=True):
         return False
 
     def handle_right_direction(self) -> None:
-        temp_blocks = self.blocks
         for tile in self.blocks.values():
             if tile.value is None:
                 continue
 
-            can_move_count = self.TOTAL_COLUMNS - tile.block_number
+            can_move_count = self.TOTAL_COLUMNS - tile.board_region["column"]
             for i in range(can_move_count):
-                if self.can_move_to_direction(tile):
-                    # switch place
-                    pass
+                next_tile = self.query_one(f"#block-{tile.block_number + i + 1}")
+                if (self.can_move_to_direction(tile)) and (next_tile.is_empty) and (self.can_move_to_direction(next_tile)):
+                    continue
+                elif not next_tile.is_empty:
+                    break
+                elif not self.can_move_to_direction(next_tile) and next_tile.is_empty:
+                    next_tile.change_to_not_empty(new_value=tile.value)
+                    tile.change_to_empty()
+                elif self.can_move_to_direction(tile) and next_tile.value == tile.value:
+                    next_tile.change_to_not_empty(new_value=tile.value + next_tile.value)
+                    tile.change_to_empty()
 
     def handle_left_direction(self) -> None:
         pass
@@ -129,7 +166,6 @@ class Board(Container, can_focus=True):
 
             match self.move_direction:
                 case "right":
-                    log(self.blocks)
                     self.handle_right_direction()
                 case "left":
                     self.handle_left_direction()
