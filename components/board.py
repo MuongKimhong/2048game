@@ -42,12 +42,9 @@ class Board(Container, can_focus=True):
     geometric_sequence = GeometricSequence().sequence
     blocks: Dict[str, Tile] = {}
     TOTAL_BLOCKS: int = 16
-    TOTAL_ROWS = 4
-    TOTAL_COLUMNS = 4
 
     move_direction: Union[str, None] = None
     all_move_directions: list[str] = ["left", "right", "up", "down"]
-
 
     def compose(self) -> ComposeResult:
         ''' 
@@ -63,86 +60,97 @@ class Board(Container, can_focus=True):
 
         #     if tile_four_block != tile_two_block:
         #         break
-        tile_two_block = 2
-        tile_four_block = 3
+        tile_two_block = 1
+        tile_four_block = 2
+        for block in range(self.TOTAL_BLOCKS):
+            is_empty: bool = True
+            value: int = 0
 
-        '''
-        loop thru TOTAL_ROWS and TOTAL_COLUMNS instead of TOTAL_BLOCKS to get
-        board region (which_row, which_column)
-        '''
-        starting_block_number = 1
-        for row in range(self.TOTAL_ROWS):
-            for column in range(self.TOTAL_COLUMNS):
-                if starting_block_number == tile_two_block:
-                    value = 2
-                    is_empty = False
-                elif starting_block_number == tile_four_block:
-                    value = 4
-                    is_empty = False
-                else:
-                    value = None
-                    is_empty = True
+            if (block + 1) == tile_two_block:
+                value = 2
+                is_empty = False
+            elif (block + 1) == tile_four_block:
+                value = 4
+                is_empty = False
+            elif block + 1 == 3:
+                value = 4
+                is_empty = False
 
-                tile = Tile(
-                    value=value,
-                    id=f"block-{starting_block_number}",
-                    block_number=starting_block_number,
-                    board_region={"row": row+1, "column": column+1},
-                    is_empty=is_empty
-                )
-                self.blocks[f"{starting_block_number}"] = tile
-                starting_block_number = starting_block_number + 1
-                yield tile
+            tile = Tile(value=value, id=f"block-{block+1}", block_number=block+1, is_empty=is_empty) 
+            self.blocks.update({f"{block+1}": tile})
+            yield tile
 
-        # for i in range(self.TOTAL_BLOCKS):
-        #     if i == tile_two_block:
-        #         tile = Tile(value=2, id=f"block-{i+1}", block_number=i+1, is_empty=False)
-        #     elif i == tile_four_block:
-        #         tile = Tile(value=4, id=f"block-{i+1}", block_number=i+1, is_empty=False)
-        #     else:
-        #         tile = Tile(value=None, id=f"block-{i+1}", block_number=i+1, is_empty=True)
+    def re_render_tiles(self) -> None:
+        for tile in self.app.query("Tile"):
+            tile.remove()
 
-        #     self.blocks[f"{i+1}"] = tile
-        #     yield tile
-
-    # check which tile can be moved to the move_direction
-    def can_move_to_direction(self, tile: Tile) -> bool:
-        match self.move_direction:
-            case "right":
-                if tile.content_region.x + tile.content_region.width < self.content_region.width:
-                    next_tile = self.query_one(f"#block-{tile.block_number+1}")
-                    if (next_tile.is_empty) or (next_tile.value == tile.value):
-                        return True
-            case "left":
-                if tile.content_region.x > self.content_region.x:
-                    return True
-            case "up":
-                if tile.content_region.y > self.content_region.y:
-                    return True
-            case "down":
-                if (tile.content_region.y + tile.content_region.height) < self.content_region.height:
-                    return True
-
-        return False
+        self.mount(*list(self.blocks.values()))
 
     def handle_right_direction(self) -> None:
-        for tile in self.blocks.values():
-            if tile.value is None:
-                continue
+        '''
+        modify the blocks variable and re-render the tiles
 
-            can_move_count = self.TOTAL_COLUMNS - tile.board_region["column"]
-            for i in range(can_move_count):
-                next_tile = self.query_one(f"#block-{tile.block_number + i + 1}")
-                if (self.can_move_to_direction(tile)) and (next_tile.is_empty) and (self.can_move_to_direction(next_tile)):
-                    continue
-                elif not next_tile.is_empty:
+        As board has 16 blocks, seperate boards into 4 parts,
+        each part has 4 blocks (which means work with 4 blocks at a time)
+        '''
+
+        '''
+        |1 |2 |3 |4 | <- 4 greatest number
+        |5 |6 |7 |8 | <- 8 greatest number
+        |9 |10|11|12| <- 12 greatest number
+        |13|14|15|16| <- 16 greatest number
+        each row has a greatest block number which is divisible by 4, 
+        in mathematic, 4 is called multiple of 4. for variable name called it multiple_of_block_num
+        '''
+        multiple_of_block_num = 4
+        seperate_rows: list[Dict[str, Tile]] = []
+        row: Dict[str, Tile] = dict()
+        pair_processing_loop: int = 12 # read paper
+
+        # seperate blocks into 4 seperate rows
+        for block_num, tile in self.blocks.items():
+            row[f"{block_num}"] = tile
+
+            if (int(block_num) % multiple_of_block_num) == 0:
+                seperate_rows.append(row)
+                row = dict()  
+
+        for row in seperate_rows:
+            smallest_num_in_row: int = int(list(row.keys())[0])
+            greatest_num_in_row: int = int(list(row.keys())[-1])
+            right_block_num: int = greatest_num_in_row
+            left_block_num: int = right_block_num - 1
+
+            for count in range(pair_processing_loop):
+                for key in reversed(list(row.keys())): # start pair processing
+                    right_block: Tile = row[str(right_block_num)]
+                    left_block: Tile = row[str(left_block_num)]
+
+                    if left_block.is_empty:
+                        break
+                    elif right_block.is_empty:
+                        row[str(right_block_num)].change_to_not_empty(new_value=left_block.value)
+                        row[str(left_block_num)].change_to_empty()
+                    elif left_block.value == right_block.value:
+                        row[str(right_block_num)].change_value(new_value=left_block.value + right_block.value)
+                        row[str(left_block_num)].change_to_empty()
+                    
                     break
-                elif not self.can_move_to_direction(next_tile) and next_tile.is_empty:
-                    next_tile.change_to_not_empty(new_value=tile.value)
-                    tile.change_to_empty()
-                elif self.can_move_to_direction(tile) and next_tile.value == tile.value:
-                    next_tile.change_to_not_empty(new_value=tile.value + next_tile.value)
-                    tile.change_to_empty()
+
+                if right_block_num - 1 == smallest_num_in_row:
+                    right_block_num = greatest_num_in_row
+                    left_block_num = right_block_num - 1
+                else:
+                    right_block_num = right_block_num - 1
+                    left_block_num = left_block_num - 1
+
+        self.blocks = dict() 
+        # combine all rows together to make full board
+        for row in seperate_rows:
+            self.blocks.update(row)
+
+        self.re_render_tiles()
+
 
     def handle_left_direction(self) -> None:
         pass
@@ -165,11 +173,7 @@ class Board(Container, can_focus=True):
             self.move_direction = event.key 
 
             match self.move_direction:
-                case "right":
-                    self.handle_right_direction()
-                case "left":
-                    self.handle_left_direction()
-                case "up":
-                    self.handle_up_direction()
-                case "down":
-                    self.handle_down_direction()
+                case "right": self.handle_right_direction()
+                case "left": self.handle_left_direction()
+                case "up": self.handle_up_direction()
+                case "down": self.handle_down_direction()
