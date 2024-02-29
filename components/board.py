@@ -39,54 +39,8 @@ class Board(Container, can_focus=True):
         grid-gutter: 1;
     } 
     """
-    geometric_sequence = GeometricSequence().sequence
-    blocks: Dict[str, Tile] = {}
-    TOTAL_BLOCKS: int = 16
 
-    move_direction: Union[str, None] = None
-    all_move_directions: list[str] = ["left", "right", "up", "down"]
-
-    def compose(self) -> ComposeResult:
-        ''' 
-        notes:
-        - when game start, only 2 tiles appear, Tile number 2 and Tile number 4 
-        - both tiles appear in random block between block 1 and block 16
-        '''
-     
-        # tile_two_block: int = randrange(self.TOTAL_BLOCKS)
-        # tile_four_block: Union[int, None] = None
-        # while True:
-        #     tile_four_block = randrange(self.TOTAL_BLOCKS)
-
-        #     if tile_four_block != tile_two_block:
-        #         break
-        tile_two_block = 1
-        tile_four_block = 2
-        for block in range(self.TOTAL_BLOCKS):
-            is_empty: bool = True
-            value: int = 0
-
-            if (block + 1) == tile_two_block:
-                value = 2
-                is_empty = False
-            elif (block + 1) == tile_four_block:
-                value = 4
-                is_empty = False
-            elif block + 1 == 3:
-                value = 4
-                is_empty = False
-
-            tile = Tile(value=value, id=f"block-{block+1}", block_number=block+1, is_empty=is_empty) 
-            self.blocks.update({f"{block+1}": tile})
-            yield tile
-
-    def re_render_tiles(self) -> None:
-        for tile in self.app.query("Tile"):
-            tile.remove()
-
-        self.mount(*list(self.blocks.values()))
-
-    def handle_right_direction(self) -> None:
+    def handle_right_direction(self, blocks: Dict[str, Tile]) -> Dict[str, Tile]:
         '''
         modify the blocks variable and re-render the tiles
 
@@ -108,7 +62,7 @@ class Board(Container, can_focus=True):
         pair_processing_loop: int = 12 # read paper
 
         # seperate blocks into 4 seperate rows
-        for block_num, tile in self.blocks.items():
+        for block_num, tile in blocks.items():
             row[f"{block_num}"] = tile
 
             if (int(block_num) % multiple_of_block_num) == 0:
@@ -144,12 +98,11 @@ class Board(Container, can_focus=True):
                     right_block_num = right_block_num - 1
                     left_block_num = left_block_num - 1
 
-        self.blocks = dict() 
-        # combine all rows together to make full board
+        new_blocks: Dict[str, Tile] = dict()
         for row in seperate_rows:
-            self.blocks.update(row)
+            new_blocks.update(row)
 
-        self.re_render_tiles()
+        return new_blocks
 
 
     def handle_left_direction(self) -> None:
@@ -161,19 +114,3 @@ class Board(Container, can_focus=True):
     def handle_down_direction(self) -> None:
         pass
 
-    def on_mount(self, event: events.Mount) -> None:
-        self.focus()
-
-    def on_blur(self, event: events.Blur) -> None:
-        '''if user accidently click on something and Board loses focus, re-focus the board'''
-        self.focus()
- 
-    def on_key(self, event: events.Key) -> None:
-        if event.key in self.all_move_directions:
-            self.move_direction = event.key 
-
-            match self.move_direction:
-                case "right": self.handle_right_direction()
-                case "left": self.handle_left_direction()
-                case "up": self.handle_up_direction()
-                case "down": self.handle_down_direction()

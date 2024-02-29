@@ -1,7 +1,7 @@
 from typing import Union, Dict
 
 from textual.widgets import Static
-from textual import events
+from textual import events, log
 
 
 class Tile(Static):
@@ -15,11 +15,13 @@ class Tile(Static):
         self.value = 0
         self.is_empty = True
         self.renderable = ""
+        self.set_empty_style()
 
     def change_to_not_empty(self, new_value: int = 0) -> None:
         self.value = new_value if new_value > 0 else self.value
         self.is_empty = False
         self.renderable = f"{self.value}"
+        self.set_style()
 
     def set_style(self) -> None:
         self.styles.color = "white"
@@ -31,14 +33,7 @@ class Tile(Static):
     def set_empty_style(self) -> None: # empty tile
         self.styles.background = "lightgrey"
 
-    def change_value(self, new_value: int) -> None:
-        self.value = new_value
-
     def on_mount(self, event: events.Mount) -> None:
         self.styles.height = "100%"
-        self.renderable = str(self.value)
-
-        if self.is_empty:
-            self.set_empty_style()
-        else:
-            self.set_style()
+        self.renderable = str(self.value) if self.value > 0 else ""
+        self.set_empty_style() if self.is_empty else self.set_style()
