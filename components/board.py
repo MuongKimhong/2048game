@@ -44,8 +44,8 @@ class Board(Container, can_focus=True):
         '''
         modify the blocks variable and re-render the tiles
 
-        As board has 16 blocks, seperate boards into 4 parts,
-        each part has 4 blocks (which means work with 4 blocks at a time)
+        As board has 16 blocks, seperate boards into 4 rows,
+        each row has 4 blocks (which means work with 4 blocks at a time)
         '''
 
         '''
@@ -63,9 +63,9 @@ class Board(Container, can_focus=True):
 
         # seperate blocks into 4 seperate rows
         for block_num, tile in blocks.items():
-            row[f"{block_num}"] = tile
+            row[str(block_num)] = tile
 
-            if (int(block_num) % multiple_of_block_num) == 0:
+            if int(block_num) % multiple_of_block_num == 0:
                 seperate_rows.append(row)
                 row = dict()  
 
