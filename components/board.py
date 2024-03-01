@@ -83,11 +83,11 @@ class Board(Container, can_focus=True):
                     if left_block.is_empty:
                         break
                     elif right_block.is_empty:
-                        row[str(right_block_num)].change_to_not_empty(new_value=left_block.value)
-                        row[str(left_block_num)].change_to_empty()
+                        row[str(right_block_num)].change_value(new_value=left_block.value)
+                        row[str(left_block_num)].change_value(new_value=0)
                     elif left_block.value == right_block.value:
                         row[str(right_block_num)].change_value(new_value=left_block.value + right_block.value)
-                        row[str(left_block_num)].change_to_empty()
+                        row[str(left_block_num)].change_value(new_value=0)
                     
                     break
 

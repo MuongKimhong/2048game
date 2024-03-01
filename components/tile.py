@@ -11,16 +11,17 @@ class Tile(Static):
         self.block_number = block_number
         super().__init__(id=id)
 
+    def change_value(self, new_value: int) -> None:
+        self.value = new_value
+        self.is_empty = True if new_value == 0 else False
+        self.renderable = str(new_value) if new_value > 0 else ""
+
     def change_to_empty(self) -> None:
-        self.value = 0
-        self.is_empty = True
-        self.renderable = ""
+        self.change_value(new_value=0)
         self.set_empty_style()
 
     def change_to_not_empty(self, new_value: int = 0) -> None:
-        self.value = new_value if new_value > 0 else self.value
-        self.is_empty = False
-        self.renderable = f"{self.value}"
+        self.change_value(new_value=new_value)
         self.set_style()
 
     def set_style(self) -> None:

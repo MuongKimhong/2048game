@@ -33,37 +33,43 @@ class GameApp(App):
         self.TOTAL_BLOCKS: int = 16
         super().__init__()
 
-    def create_blocks(self) -> None:
+    def random_block_nums_on_game_start(self) -> tuple:
         ''' 
         notes:
         - when game start, only 2 tiles appear, Tile number 2 and Tile number 4 
-        - both tiles appear in random block between block 1 and block 16
+        - both tiles appear in random block number between block 1 and block 16
         '''
-     
-        tile_two_block: int = randrange(self.TOTAL_BLOCKS)
-        tile_four_block: Union[int, None] = None
+        tile_number_two: int = randrange(1, self.TOTAL_BLOCKS) 
+        tile_number_four: Union[int, None] = None
         while True:
-            tile_four_block = randrange(self.TOTAL_BLOCKS)
+            tile_number_four = randrange(1, self.TOTAL_BLOCKS)
 
-            if tile_four_block != tile_two_block:
+            if tile_number_four != tile_number_two:
                 break
 
+        return (tile_number_two, tile_number_four)
+        
+
+    def create_blocks(self) -> None:
+        tile_two, tile_four = self.random_block_nums_on_game_start()
+
         for block in range(self.TOTAL_BLOCKS):
-            value: int = 0
-
-            if (block + 1) == tile_two_block:
-                value = 2
-            elif (block + 1) == tile_four_block:
-                value = 4
-
-            is_empty: bool = True if value == 0 else False
+            value = 2 if (block + 1) == tile_two else 4 if (block + 1) == tile_four else 0
+            is_empty = True if value == 0 else False
             tile = Tile(value=value, id=f"block-{block+1}", block_number=block+1, is_empty=is_empty) 
-            self.blocks.update({f"{block+1}": tile})
+            self.blocks.update({str(block+1): tile})
 
     def mount_tiles(self) -> None:
         board = self.query_one("Board")
         for tile in self.blocks.values(): 
             board.mount(tile)
+
+    # change tiles value and position on key press
+    def update_tiles(self) -> None:
+        tiles_widget = list(self.query("Tile"))
+
+        for i, tile in enumerate(list(self.blocks.values())):
+            tiles_widget[i].change_to_not_empty(tile.value) if tile.value > 0 else tiles_widget[i].change_to_empty()
 
     def on_mount(self, event: events.Mount) -> None:
         self.screen.styles.background = "grey"
@@ -81,14 +87,7 @@ class GameApp(App):
             match event.key:
                 case "right": 
                     self.blocks = board.handle_right_direction(blocks=self.blocks)
-                    tiles_widget = list(self.query("Tile"))
-
-                    for index, tile in enumerate(list(self.blocks.values())):
-                        if tile.value > 0:
-                            tiles_widget[index].change_to_not_empty(new_value=tile.value)
-                            continue
-                            
-                        tiles_widget[index].change_to_empty()
+                    self.update_tiles()
 
                 case "left": board.handle_left_direction()
                 case "up": board.handle_up_direction()
