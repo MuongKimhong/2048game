@@ -59,7 +59,9 @@ class Board(Container, can_focus=True):
         multiple_of_block_num = 4
         seperate_rows: list[Dict[str, Tile]] = []
         row: Dict[str, Tile] = dict()
-        pair_processing_loop: int = 12 # read paper
+        
+        '''each row, loop 12 times for pair processing. read paper for more info'''
+        pair_processing_loop: int = 12
 
         # seperate blocks into 4 seperate rows
         for block_num, tile in blocks.items():
@@ -70,8 +72,9 @@ class Board(Container, can_focus=True):
                 row = dict()  
 
         for row in seperate_rows:
-            smallest_num_in_row: int = int(list(row.keys())[0])
-            greatest_num_in_row: int = int(list(row.keys())[-1])
+            smallest_num_in_row = int(list(row.keys())[0])
+            greatest_num_in_row = int(list(row.keys())[-1])
+
             right_block_num: int = greatest_num_in_row
             left_block_num: int = right_block_num - 1
 
@@ -97,6 +100,7 @@ class Board(Container, can_focus=True):
                 else:
                     right_block_num = right_block_num - 1
                     left_block_num = left_block_num - 1
+
 
         new_blocks: Dict[str, Tile] = dict()
         for row in seperate_rows:
