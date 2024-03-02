@@ -46,7 +46,7 @@ class Tile(Static):
         elif self.value == 64:
             self.set_color("white", "darkred")
         elif self.value == 128:
-            self.set_color("white", "ansi_bright_yellow")
+            self.set_color("white", "ansi_blue")
         elif self.value == 256:
             self.set_color("white", "ansi_yellow")
         else:

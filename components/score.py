@@ -8,7 +8,7 @@ class Score(Static):
         width: 12;   
         height: 7;
         color: white;
-        background: ansi_white;
+        background: maroon;
         text-style: bold;
         text-align: center;
         padding-top: 2;
