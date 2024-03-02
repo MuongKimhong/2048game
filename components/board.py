@@ -11,26 +11,6 @@ from textual import log, events
 from components.tile import Tile
 
 
-class GeometricSequence:
-    def __init__(self) -> None:
-        self.first_term = 2
-        self.last_term = 2048
-        self.common_ratio = 2
-
-    @property
-    def sequence(self) -> list[int]:
-        s = []
-
-        term = self.first_term
-        while True:
-            s.append(term)
-            term = term * self.common_ratio
-
-            if term == self.last_term: break
-
-        return s
-
-
 class Board(Container, can_focus=True):
     DEFAULT_CSS = """
     Board {
@@ -45,7 +25,6 @@ class Board(Container, can_focus=True):
         score_widget = self.app.query_one("Score")
         old_score = int(str(score_widget.renderable))
         score_widget.update(str(old_score + sum_value))
-
 
     def handle_right_direction(self, blocks: Dict[str, Tile]) -> Dict[str, Tile]:
         '''
@@ -115,7 +94,6 @@ class Board(Container, can_focus=True):
             new_blocks.update(row)
 
         return new_blocks
-
 
     def handle_left_direction(self, blocks: Dict[str, Tile]) -> Dict[str, Tile]:
         '''
