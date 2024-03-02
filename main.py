@@ -105,7 +105,6 @@ class GameApp(App):
     def on_key(self, event: events.Key) -> None:
         if event.key in self.all_move_directions:
             board = self.query_one("Board")
-            self.check_game_over()
 
             match event.key:
                 case "right": 
@@ -116,8 +115,12 @@ class GameApp(App):
                     self.blocks = board.handle_left_direction(blocks=self.blocks)
                     self.update_tiles()
 
-                case "up": board.handle_up_direction()
+                case "up": 
+                    self.blocks = board.handle_up_direction(blocks=self.blocks)
+                    self.update_tiles()
                 case "down": board.handle_down_direction()
+
+            # self.check_game_over()
 
 
 if __name__ == "__main__":
