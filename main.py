@@ -1,5 +1,5 @@
 from typing import Union, Dict
-from random import randrange
+import random
 
 from textual.app import App, ComposeResult
 from textual.containers import Container
@@ -39,10 +39,10 @@ class GameApp(App):
         - when game start, only 2 tiles appear, Tile number 2 and Tile number 4 
         - both tiles appear in random block number between block 1 and block 16
         '''
-        tile_number_two: int = randrange(1, self.TOTAL_BLOCKS) 
+        tile_number_two: int = random.randrange(1, self.TOTAL_BLOCKS) 
         tile_number_four: Union[int, None] = None
         while True:
-            tile_number_four = randrange(1, self.TOTAL_BLOCKS)
+            tile_number_four = random.randrange(1, self.TOTAL_BLOCKS)
 
             if tile_number_four != tile_number_two:
                 break
@@ -64,12 +64,31 @@ class GameApp(App):
         for tile in self.blocks.values(): 
             board.mount(tile)
 
+    def spawn_new_tile(self) -> None:
+        tile_number = random.choice([2, 4])
+        random_block: Union[int, None] = None
+        empty_blocks = [block_num for block_num, tile in self.blocks.items() if tile.is_empty]
+
+        log(tile_number)
+        log(empty_blocks)
+
+        while True:
+            random_block = random.randrange(1, self.TOTAL_BLOCKS)
+
+            if str(random_block) in empty_blocks:
+                break        
+
+        self.blocks[str(random_block)].change_value(new_value=tile_number)
+        list(self.query("Tile"))[random_block - 1].change_to_not_empty(new_value=tile_number)
+
     # change tiles value and position on key press
-    def update_tiles(self) -> None:
+    def update_tiles(self) -> None: 
         tiles_widget = list(self.query("Tile"))
 
         for i, tile in enumerate(list(self.blocks.values())):
             tiles_widget[i].change_to_not_empty(tile.value) if tile.value > 0 else tiles_widget[i].change_to_empty()
+
+        self.spawn_new_tile()
 
     def on_mount(self, event: events.Mount) -> None:
         self.screen.styles.background = "grey"
