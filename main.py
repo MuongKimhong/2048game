@@ -1,5 +1,6 @@
 from typing import Union, Dict
 import random
+import time
 
 from textual.app import App, ComposeResult
 from textual.containers import Container
@@ -64,14 +65,17 @@ class GameApp(App):
         for tile in self.blocks.values(): 
             board.mount(tile)
 
+    def check_game_over(self) -> None:
+        empty_blocks = [block_num for block_num, tile in self.blocks.items() if tile.is_empty]
+        if len(empty_blocks) <= 0:
+            time.sleep(2)
+            self.exit()
+
     def spawn_new_tile(self) -> None:
         tile_number = random.choice([2, 4])
         random_block: Union[int, None] = None
+
         empty_blocks = [block_num for block_num, tile in self.blocks.items() if tile.is_empty]
-
-        log(tile_number)
-        log(empty_blocks)
-
         while True:
             random_block = random.randrange(1, self.TOTAL_BLOCKS)
 
@@ -102,6 +106,7 @@ class GameApp(App):
     def on_key(self, event: events.Key) -> None:
         if event.key in self.all_move_directions:
             board = self.query_one("Board")
+            self.check_game_over()
 
             match event.key:
                 case "right": 
