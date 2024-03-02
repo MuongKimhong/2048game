@@ -40,6 +40,12 @@ class Board(Container, can_focus=True):
     } 
     """
 
+    def update_score(self, sum_value: int) -> None:
+        score_widget = self.app.query_one("Score")
+        old_score = int(str(score_widget.renderable))
+        score_widget.update(str(old_score + sum_value))
+
+
     def handle_right_direction(self, blocks: Dict[str, Tile]) -> Dict[str, Tile]:
         '''
         modify the blocks variable and re-render the tiles
@@ -91,6 +97,7 @@ class Board(Container, can_focus=True):
                     elif left_block.value == right_block.value:
                         row[str(right_block_num)].change_value(new_value=left_block.value + right_block.value)
                         row[str(left_block_num)].change_value(new_value=0)
+                        self.update_score(sum_value=left_block.value + right_block.value)
                     
                     break
 
@@ -153,6 +160,7 @@ class Board(Container, can_focus=True):
                     elif left_block.value == right_block.value:
                         row[str(left_block_num)].change_value(new_value=left_block.value+right_block.value)
                         row[str(right_block_num)].change_value(new_value=0)
+                        self.update_score(sum_value=left_block.value + right_block.value)
 
                     break
 
