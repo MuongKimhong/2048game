@@ -31,6 +31,7 @@ class GameApp(App):
     def __init__(self) -> None:
         self.blocks: Dict[str, Tile] = dict()
         self.all_move_directions: list[str] = ["right", "left", "up", "down"]
+        self.can_spawn_new_tile: bool = True
         self.TOTAL_BLOCKS: int = 16
         super().__init__()
 
@@ -64,11 +65,10 @@ class GameApp(App):
         for tile in self.blocks.values(): 
             board.mount(tile)
 
-    def check_game_over(self) -> None:
+    @property
+    def game_over(self) -> bool:
         empty_blocks = [block_num for block_num, tile in self.blocks.items() if tile.is_empty]
-        if len(empty_blocks) <= 0:
-            time.sleep(2)
-            self.exit()
+        return True if len(empty_blocks) <= 0 else False
 
     def spawn_new_tile(self) -> None:
         tile_number = random.choice([2, 4])
@@ -91,7 +91,8 @@ class GameApp(App):
         for i, tile in enumerate(list(self.blocks.values())):
             tiles_widget[i].change_to_not_empty(tile.value) if tile.value > 0 else tiles_widget[i].change_to_empty()
 
-        self.spawn_new_tile()
+        if self.can_spawn_new_tile:
+            self.spawn_new_tile()
 
     def on_mount(self, event: events.Mount) -> None:
         self.screen.styles.background = "grey"
@@ -104,28 +105,27 @@ class GameApp(App):
 
     def on_key(self, event: events.Key) -> None:
         if event.key in self.all_move_directions:
+            if self.game_over:
+                time.sleep(1)
+                self.exit(return_code=4, message=f"Game is over with score: {self.query_one('Score').renderable}")
+
             board = self.query_one("Board")
 
             match event.key:
                 case "right": 
-                    self.blocks = board.handle_right_direction(blocks=self.blocks)
-                    self.update_tiles()
-
+                    self.blocks = board.handle_right_direction(self.blocks)
                 case "left": 
-                    self.blocks = board.handle_left_direction(blocks=self.blocks)
-                    self.update_tiles()
-
+                    self.blocks = board.handle_left_direction(self.blocks)
                 case "up": 
-                    self.blocks = board.handle_up_direction(blocks=self.blocks)
-                    self.update_tiles()
-
+                    self.blocks = board.handle_up_direction(self.blocks)
                 case "down": 
-                    self.blocks = board.handle_down_direction(blocks=self.blocks)
-                    self.update_tiles()
+                    self.blocks = board.handle_down_direction(self.blocks)
 
-            # self.check_game_over()
+            self.update_tiles()
 
 
 if __name__ == "__main__":
     game = GameApp()
     game.run()
+    import sys
+    sys.exit(game.return_code or 0)

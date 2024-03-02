@@ -19,3 +19,7 @@ class Score(Static):
 
     def on_mount(self, event: events.Mount) -> None:
         self.renderable = "00"
+
+    def update_score(self, sum_value: int) -> None:
+        old_score = int(str(self.renderable))
+        self.renderable = str(old_score + sum_value)
