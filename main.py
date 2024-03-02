@@ -118,7 +118,10 @@ class GameApp(App):
                 case "up": 
                     self.blocks = board.handle_up_direction(blocks=self.blocks)
                     self.update_tiles()
-                case "down": board.handle_down_direction()
+
+                case "down": 
+                    self.blocks = board.handle_down_direction(blocks=self.blocks)
+                    self.update_tiles()
 
             # self.check_game_over()
 
