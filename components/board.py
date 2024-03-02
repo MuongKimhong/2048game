@@ -74,22 +74,16 @@ def pair_processing(left_block: Tile, right_block: Tile, score: Score, move_dire
     if move_direction not in ["left", "right", "up", "down"]:
         return None
 
-    if move_direction == "right" or move_direction == "down":
-        if right_block.is_empty:
-            right_block.change_value(left_block.value)
-            left_block.change_value(0)
-        elif left_block.value == right_block.value:
-            right_block.change_value(left_block.value + right_block.value)
-            left_block.change_value(0)   
-    else:
-        if left_block.is_empty:
-            left_block.change_value(new_value=right_block.value)
-            right_block.change_value(new_value=0)
-        elif left_block.value == right_block.value:
-            left_block.change_value(new_value=left_block.value+right_block.value)
-            right_block.change_value(new_value=0)
+    block_to_update = left_block if (move_direction == "left" or move_direction == "up") else right_block
+    block_to_delete = right_block if (move_direction == "left" or move_direction == "up") else left_block
 
-    score.update_score(sum_value=left_block.value + right_block.value)
+    if block_to_update.is_empty:
+        block_to_update.change_value(block_to_delete.value)
+        block_to_delete.change_value(0)
+    elif block_to_update.value == block_to_delete.value:
+        score.update_score(sum_value=block_to_update.value + block_to_delete.value)
+        block_to_update.change_value(block_to_update.value + block_to_delete.value)
+        block_to_delete.change_value(0)
 
 
 class Board(Container, can_focus=True):
@@ -103,8 +97,6 @@ class Board(Container, can_focus=True):
     """
 
     def handle_right_direction(self, blocks: Dict[str, Tile]) -> Dict[str, Tile]:        
-        '''each row, loop 12 times for pair processing. read paper for more info'''
-        pair_processing_loop: int = 12
         seperate_rows: list[Dict[str, Tile]] = decompose_blocks_to_rows(blocks)
 
         for row in seperate_rows:
@@ -114,29 +106,23 @@ class Board(Container, can_focus=True):
             right_block_num: int = greatest_num_in_row
             left_block_num: int = right_block_num - 1
 
-            for count in range(pair_processing_loop):
-                for key in reversed(list(row.keys())): # start pair processing
-                    right_block: Tile = row[str(right_block_num)]
-                    left_block: Tile = row[str(left_block_num)]
+            for count in range(12): # each row, loop 12 times for pair processing. read paper for more info
+                for key in reversed(list(row.keys())):
+                    right_block, left_block = (row[str(right_block_num)], row[str(left_block_num)])
 
-                    if left_block.is_empty:
-                        break
+                    if left_block.is_empty: break
 
                     pair_processing(left_block, right_block, self.app.query_one("Score"), "right")
                     break
 
                 if right_block_num - 1 == smallest_num_in_row:
-                    right_block_num = greatest_num_in_row
-                    left_block_num = right_block_num - 1
+                    right_block_num, left_block_num = (greatest_num_in_row, greatest_num_in_row - 1)
                 else:
-                    right_block_num = right_block_num - 1
-                    left_block_num = left_block_num - 1
+                    right_block_num, left_block_num = (right_block_num - 1, left_block_num - 1)
 
         return contruct_new_blocks(seperate_rows)
 
     def handle_left_direction(self, blocks: Dict[str, Tile]) -> Dict[str, Tile]:
-        '''each row, loop 12 times for pair processing. read paper for more info'''
-        pair_processing_loop: int = 12
         seperate_rows: list[Dict[str, Tile]] = decompose_blocks_to_rows(blocks)
 
         for row in seperate_rows:
@@ -146,29 +132,23 @@ class Board(Container, can_focus=True):
             left_block_num: int = smallest_num_in_row
             right_block_num: int = left_block_num + 1
 
-            for count in range(pair_processing_loop):
+            for count in range(12): # each row, loop 12 times for pair processing. read paper for more info
                 for key in list(row.keys()):
-                    left_block: Tile = row[str(left_block_num)]
-                    right_block: Tile = row[str(right_block_num)]
+                    left_block, right_block = (row[str(left_block_num)], row[str(right_block_num)])
 
-                    if right_block.is_empty:
-                        break
+                    if right_block.is_empty: break
 
                     pair_processing(left_block, right_block, self.app.query_one("Score"), "left")
-                    break
+                    break 
 
                 if left_block_num + 1 == greatest_num_in_row:
-                    left_block_num = smallest_num_in_row
-                    right_block_num = left_block_num + 1
+                    left_block_num, right_block_num = (smallest_num_in_row, smallest_num_in_row + 1)
                 else:
-                    left_block_num = left_block_num + 1
-                    right_block_num = right_block_num + 1
+                    left_block_num, right_block_num = (left_block_num + 1, right_block_num + 1)
 
         return contruct_new_blocks(seperate_rows)
 
     def handle_up_direction(self, blocks: Dict[str, Tile]) -> Dict[str, Tile]:    
-        '''each row, loop 12 times for pair processing. read paper for more info'''
-        pair_processing_loop: int = 12
         seperate_rows: list[Dict[str, Tile]] = decompose_blocks_to_rows(blocks)
         seperate_columns: list[Dict[str, Tile]] = transpose(seperate_rows)
 
@@ -179,29 +159,23 @@ class Board(Container, can_focus=True):
             left_block_num: int = smallest_num_in_column
             right_block_num: int = left_block_num + 4
 
-            for count in range(pair_processing_loop):
+            for count in range(12): # each column, loop 12 times for pair processing. read paper for more info
                 for key in list(column.keys()):
-                    left_block: Tile = column[str(left_block_num)]
-                    right_block: Tile = column[str(right_block_num)]
+                    left_block, right_block = (column[str(left_block_num)], column[str(right_block_num)])
 
-                    if right_block.is_empty:
-                        break
+                    if right_block.is_empty: break
 
                     pair_processing(left_block, right_block, self.app.query_one("Score"), "up")
                     break
 
                 if left_block_num + 4 == greatest_num_in_column:
-                    left_block_num = smallest_num_in_column
-                    right_block_num = left_block_num + 4
+                    left_block_num, right_block_num = (smallest_num_in_column, smallest_num_in_column + 4)
                 else:
-                    left_block_num = left_block_num + 4
-                    right_block_num = right_block_num + 4
+                    left_block_num, right_block_num = (left_block_num + 4, right_block_num + 4)
 
         return contruct_new_blocks(transpose(seperate_columns, reverse=True))
 
     def handle_down_direction(self, blocks: Dict[str, Tile]) -> Dict[str, Tile]:
-        '''each row, loop 12 times for pair processing. read paper for more info'''
-        pair_processing_loop: int = 12
         seperate_rows: list[Dict[str, Tile]] = decompose_blocks_to_rows(blocks)
         seperate_columns: list[Dict[str, Tile]] = transpose(seperate_rows)
 
@@ -212,22 +186,18 @@ class Board(Container, can_focus=True):
             right_block_num: int = greatest_num_in_column
             left_block_num: int = right_block_num - 4
 
-            for count in range(pair_processing_loop):
+            for count in range(12): # each column, loop 12 times for pair processing. read paper for more info
                 for key in reversed(list(column.keys())):
-                    left_block: Tile = column[str(left_block_num)]
-                    right_block: Tile = column[str(right_block_num)]
+                    left_block, right_block = (column[str(left_block_num)], column[str(right_block_num)])
 
-                    if left_block.is_empty:
-                        break
+                    if left_block.is_empty: break
 
                     pair_processing(left_block, right_block, self.app.query_one("Score"), "down")
                     break
 
                 if right_block_num - 4 == smallest_num_in_column:
-                    right_block_num = greatest_num_in_column
-                    left_block_num = right_block_num - 4
+                    right_block_num, left_block_num = (greatest_num_in_column, greatest_num_in_column - 4)
                 else:
-                    left_block_num = left_block_num - 4
-                    right_block_num = right_block_num - 4
+                    left_block_num, right_block_num = (left_block_num - 4, right_block_num - 4)
 
         return contruct_new_blocks(transpose(seperate_columns, reverse=True)) 

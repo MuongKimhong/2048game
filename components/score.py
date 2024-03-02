@@ -1,5 +1,5 @@
 from textual.widgets import Static
-from textual import events
+from textual import events, log
 
 
 class Score(Static):
@@ -15,11 +15,10 @@ class Score(Static):
         margin-left: 28;
     }  
     """
-    total_score = 0
 
     def on_mount(self, event: events.Mount) -> None:
         self.renderable = "00"
 
     def update_score(self, sum_value: int) -> None:
         old_score = int(str(self.renderable))
-        self.renderable = str(old_score + sum_value)
+        self.update(str(old_score + sum_value))
