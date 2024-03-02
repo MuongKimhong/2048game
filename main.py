@@ -50,7 +50,6 @@ class GameApp(App):
 
         return (tile_number_two, tile_number_four)
         
-
     def create_blocks(self) -> None:
         tile_two, tile_four = self.random_block_nums_on_game_start()
 
@@ -113,7 +112,10 @@ class GameApp(App):
                     self.blocks = board.handle_right_direction(blocks=self.blocks)
                     self.update_tiles()
 
-                case "left": board.handle_left_direction()
+                case "left": 
+                    self.blocks = board.handle_left_direction(blocks=self.blocks)
+                    self.update_tiles()
+
                 case "up": board.handle_up_direction()
                 case "down": board.handle_down_direction()
 

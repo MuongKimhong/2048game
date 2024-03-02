@@ -109,8 +109,65 @@ class Board(Container, can_focus=True):
         return new_blocks
 
 
-    def handle_left_direction(self) -> None:
-        pass
+    def handle_left_direction(self, blocks: Dict[str, Tile]) -> Dict[str, Tile]:
+        '''
+        1 smallest number, 1 + 3 = 4 (divisible by 4) -> |1 |2 |3 |4 |
+        5 smallest number, 5 + 3 = 8 (divisible by 4) -> |5 |6 |7 |8 |
+        9 smallest number, 9 + 3 = 12 (divisible by 4) ->|9 |10|11|12|
+        13 smallest number,13 + 3 = 16(divisible by 4) ->|13|14|15|16|
+        each row has smallest block number which is divisible by 4 after added 3, 
+        in mathematic, 4 is called multiple of 4. for variable name called it multiple_of_block_num
+        '''
+        multiple_of_block_num = 4
+        seperate_rows: list[Dict[str, Tile]] = []
+        row: Dict[str, Tile] = dict()
+
+        '''each row, loop 12 times for pair processing. read paper for more info'''
+        pair_processing_loop: int = 12
+
+        # seperate blocks into 4 seperate rows
+        for block_num, tile in blocks.items():
+            row[str(block_num)] = tile
+
+            if int(block_num) % multiple_of_block_num == 0:
+                seperate_rows.append(row)
+                row = dict()  
+
+        for row in seperate_rows:
+            smallest_num_in_row = int(list(row.keys())[0])
+            greatest_num_in_row = int(list(row.keys())[-1])
+
+            left_block_num: int = smallest_num_in_row
+            right_block_num: int = left_block_num + 1
+
+            for count in range(pair_processing_loop):
+                for key in list(row.keys()):
+                    left_block: Tile = row[str(left_block_num)]
+                    right_block: Tile = row[str(right_block_num)]
+
+                    if right_block.is_empty:
+                        break
+                    elif left_block.is_empty:
+                        row[str(left_block_num)].change_value(new_value=right_block.value)
+                        row[str(right_block_num)].change_value(new_value=0)
+                    elif left_block.value == right_block.value:
+                        row[str(left_block_num)].change_value(new_value=left_block.value+right_block.value)
+                        row[str(right_block_num)].change_value(new_value=0)
+
+                    break
+
+                if left_block_num + 1 == greatest_num_in_row:
+                    left_block_num = smallest_num_in_row
+                    right_block_num = left_block_num + 1
+                else:
+                    left_block_num = left_block_num + 1
+                    right_block_num = right_block_num + 1
+            
+        new_blocks: Dict[str, Tile] = dict()
+        for row in seperate_rows:
+            new_blocks.update(row)
+
+        return new_blocks
 
     def handle_up_direction(self) -> None:
         pass

@@ -34,7 +34,7 @@ class Tile(Static):
         self.styles.padding = (2, 0) # 2 top, 0 bottom 
 
         if self.value == 2:
-            self.set_color("grey", "ansi_bright_cyan")
+            self.set_color("white", "cadetblue")
         elif self.value == 4:
             self.set_color("white", "darkgoldenrod")
         elif self.value == 8:
