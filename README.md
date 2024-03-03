@@ -4,7 +4,7 @@
 
 ### Install & Play
 ```bash
-$ git clone
+$ git clone https://github.com/MuongKimhong/2048game.git
 $ cd 2048game
 $ pip3 install -r requirements.txt
 ```
