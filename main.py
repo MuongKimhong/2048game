@@ -91,8 +91,7 @@ class GameApp(App):
         for i, tile in enumerate(list(self.blocks.values())):
             tiles_widget[i].change_to_not_empty(tile.value) if tile.value > 0 else tiles_widget[i].change_to_empty()
 
-        if self.can_spawn_new_tile:
-            self.spawn_new_tile()
+        if self.can_spawn_new_tile: self.spawn_new_tile()
 
     def on_mount(self, event: events.Mount) -> None:
         self.screen.styles.background = "grey"

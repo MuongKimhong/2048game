@@ -100,11 +100,8 @@ class Board(Container, can_focus=True):
         seperate_rows: list[Dict[str, Tile]] = decompose_blocks_to_rows(blocks)
 
         for row in seperate_rows:
-            smallest_num_in_row = int(list(row.keys())[0])
-            greatest_num_in_row = int(list(row.keys())[-1])
-
-            right_block_num: int = greatest_num_in_row
-            left_block_num: int = right_block_num - 1
+            smallest_num, greatest_num = (int(list(row.keys())[0]), int(list(row.keys())[-1]))
+            right_block_num, left_block_num = (greatest_num, greatest_num - 1)
 
             for count in range(12): # each row, loop 12 times for pair processing. read paper for more info
                 for key in reversed(list(row.keys())):
@@ -115,8 +112,8 @@ class Board(Container, can_focus=True):
                     pair_processing(left_block, right_block, self.app.query_one("Score"), "right")
                     break
 
-                if right_block_num - 1 == smallest_num_in_row:
-                    right_block_num, left_block_num = (greatest_num_in_row, greatest_num_in_row - 1)
+                if right_block_num - 1 == smallest_num:
+                    right_block_num, left_block_num = (greatest_num, greatest_num - 1)
                 else:
                     right_block_num, left_block_num = (right_block_num - 1, left_block_num - 1)
 
@@ -126,11 +123,8 @@ class Board(Container, can_focus=True):
         seperate_rows: list[Dict[str, Tile]] = decompose_blocks_to_rows(blocks)
 
         for row in seperate_rows:
-            smallest_num_in_row = int(list(row.keys())[0])
-            greatest_num_in_row = int(list(row.keys())[-1])
-
-            left_block_num: int = smallest_num_in_row
-            right_block_num: int = left_block_num + 1
+            smallest_num, greatest_num = (int(list(row.keys())[0]), int(list(row.keys())[-1]))
+            left_block_num, right_block_num = (smallest_num, smallest_num + 1)
 
             for count in range(12): # each row, loop 12 times for pair processing. read paper for more info
                 for key in list(row.keys()):
@@ -141,8 +135,8 @@ class Board(Container, can_focus=True):
                     pair_processing(left_block, right_block, self.app.query_one("Score"), "left")
                     break 
 
-                if left_block_num + 1 == greatest_num_in_row:
-                    left_block_num, right_block_num = (smallest_num_in_row, smallest_num_in_row + 1)
+                if left_block_num + 1 == greatest_num:
+                    left_block_num, right_block_num = (smallest_num, smallest_num + 1)
                 else:
                     left_block_num, right_block_num = (left_block_num + 1, right_block_num + 1)
 
@@ -153,11 +147,8 @@ class Board(Container, can_focus=True):
         seperate_columns: list[Dict[str, Tile]] = transpose(seperate_rows)
 
         for column in seperate_columns:
-            smallest_num_in_column = int(list(column.keys())[0])
-            greatest_num_in_column = int(list(column.keys())[-1])
-
-            left_block_num: int = smallest_num_in_column
-            right_block_num: int = left_block_num + 4
+            smallest_num, greatest_num = (int(list(column.keys())[0]), int(list(column.keys())[-1]))
+            left_block_num, right_block_num = (smallest_num, smallest_num + 4)
 
             for count in range(12): # each column, loop 12 times for pair processing. read paper for more info
                 for key in list(column.keys()):
@@ -168,8 +159,8 @@ class Board(Container, can_focus=True):
                     pair_processing(left_block, right_block, self.app.query_one("Score"), "up")
                     break
 
-                if left_block_num + 4 == greatest_num_in_column:
-                    left_block_num, right_block_num = (smallest_num_in_column, smallest_num_in_column + 4)
+                if left_block_num + 4 == greatest_num:
+                    left_block_num, right_block_num = (smallest_num, smallest_num + 4)
                 else:
                     left_block_num, right_block_num = (left_block_num + 4, right_block_num + 4)
 
@@ -180,11 +171,8 @@ class Board(Container, can_focus=True):
         seperate_columns: list[Dict[str, Tile]] = transpose(seperate_rows)
 
         for column in seperate_columns:
-            smallest_num_in_column = int(list(column.keys())[0])
-            greatest_num_in_column = int(list(column.keys())[-1])
-
-            right_block_num: int = greatest_num_in_column
-            left_block_num: int = right_block_num - 4
+            smallest_num, greatest_num = (int(list(column.keys())[0]), int(list(column.keys())[-1]))
+            right_block_num, left_block_num = (greatest_num, greatest_num - 4)
 
             for count in range(12): # each column, loop 12 times for pair processing. read paper for more info
                 for key in reversed(list(column.keys())):
@@ -195,8 +183,8 @@ class Board(Container, can_focus=True):
                     pair_processing(left_block, right_block, self.app.query_one("Score"), "down")
                     break
 
-                if right_block_num - 4 == smallest_num_in_column:
-                    right_block_num, left_block_num = (greatest_num_in_column, greatest_num_in_column - 4)
+                if right_block_num - 4 == smallest_num:
+                    right_block_num, left_block_num = (greatest_num, greatest_num - 4)
                 else:
                     left_block_num, right_block_num = (left_block_num - 4, right_block_num - 4)
 
